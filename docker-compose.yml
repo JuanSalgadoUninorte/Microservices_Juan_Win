@@ -1,0 +1,42 @@
+version: '3.8'  # Define la versión de Docker Compose
+
+services:
+  jenkins:
+    build: .
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/workspace
+    privileged: true
+    networks:
+      - restaurant-net
+
+  pedidos-api:
+    build: ./pedidos_api
+    ports:
+      - "8000:8000"
+    networks:
+      - restaurant-net
+    depends_on:
+      - inventario-api
+    volumes:
+      - ./pedidos_api/tests:/app/tests
+
+  inventario-api:
+    build: ./inventario_api
+    ports:
+      - "8001:8001"
+    networks:
+      - restaurant-net
+    volumes:
+      - ./inventario_api/tests:/app/tests
+
+networks:
+  restaurant-net:
+    driver: bridge
+
+volumes:
+  jenkins_home:
